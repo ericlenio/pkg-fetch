@@ -17,12 +17,11 @@ npm pack
 
 # Notes
 
-Build the node executable. Some things to keep in mind: use ulimit to bump up
-shell limits so the compiler will not run out of memory (which might
-necessitate first running `sudo usermod -L daemon $USER`), and ensure that /tmp (the
-default directory that pkg does the compile) is on a filesystem that has `wxallowed`.
-If /tmp is its own filesystem without `wxallowed`, here is one way to temporarily
-allow it:
+Some things to keep in mind:
+
+- use `ulimit` to bump up shell limits so the compiler will not run out of memory (which might necessitate first running `sudo usermod -L daemon $USER`), the limits below worked for me on OpenBSD 7.2
+
+- ensure that `/tmp` (the default directory that pkg does the compile) is on a filesystem that has `wxallowed`; if `/tmp` is its own filesystem without `wxallowed`, here is one way to temporarily allow it:
 
 ```
 sudo mount -u -o wxallowed /tmp
