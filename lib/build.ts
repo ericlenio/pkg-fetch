@@ -157,6 +157,17 @@ async function applyPatches(nodeVersion: string) {
       ? patchesJson[storedPatch.sameAs as keyof typeof patchesJson]
       : storedPatch;
 
+  if (process.platform==='openbsd') {
+    // source of this patch: https://github.com/nodejs/node/issues/41224
+    const openbsdPatchUrl = 'https://github.com/localscope/node/commit/1746ee6a9a2c40a853e64485fd2fa43de446d07b.patch?diff=unified';
+    const openbsdPatchBasename = 'openbsd.patch';
+    const openbsdPatchPath = path.join(patchesPath,openbsdPatchBasename);
+    if (!fs.existsSync(openbsdPatchPath)) {
+      await downloadUrl(openbsdPatchUrl, openbsdPatchPath);
+    }
+    patches.push(openbsdPatchBasename);
+  }
+
   for (const patch of patches) {
     const patchPath = path.join(patchesPath, patch);
     const args = ['-p1', '-i', patchPath];
@@ -246,6 +257,11 @@ async function compileOnUnix(
 
   args.push(...getConfigureArgs(getMajor(nodeVersion), targetPlatform));
 
+  if (hostPlatform === 'openbsd') {
+    process.env.CC='clang';
+    process.env.CXX='clang++';
+  }
+
   // TODO same for windows?
   await spawn('/bin/sh', ['./configure', ...args], {
     cwd: nodePath,
@@ -253,7 +269,7 @@ async function compileOnUnix(
   });
 
   await spawn(
-    hostPlatform === 'freebsd' ? 'gmake' : 'make',
+    hostPlatform === 'freebsd' || hostPlatform ==='openbsd' ? 'gmake' : 'make',
     ['-j', String(MAKE_JOB_COUNT)],
     {
       cwd: nodePath,
