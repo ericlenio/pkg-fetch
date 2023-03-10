@@ -1,10 +1,10 @@
 {
-  "name": "pkg-fetch",
+  "name": "@lincware/pkg-fetch",
   "version": "3.4.2",
   "description": "Compiles and stores base binaries for pkg",
   "main": "lib-es5/index.js",
   "license": "MIT",
-  "repository": "vercel/pkg-fetch",
+  "repository": "ericlenio/pkg-fetch",
   "bin": {
     "pkg-fetch": "lib-es5/bin.js"
   },
