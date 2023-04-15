@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { log } from './log';
 import { spawnSync, SpawnSyncOptions } from 'child_process';
+import { log } from './log';
 
 const NODE_PORTS_DIR="/usr/ports/lang/node";
 const IS_OPENBSD=process.platform==='openbsd';
 if (IS_OPENBSD && !fs.existsSync(NODE_PORTS_DIR)) {
-  throw `expected ${NODE_PORTS_DIR} to exist, see: https://www.openbsd.org/faq/ports/ports.html`;
+  const e=new Error(`expected ${NODE_PORTS_DIR} to exist, see: https://www.openbsd.org/faq/ports/ports.html`);
+  throw e;
 }
 
 const getMakeVariable=(VARNAME: string)=>spawnSync("make",[`show=${VARNAME}`],{cwd:NODE_PORTS_DIR}).stdout.toString().trim();
@@ -20,7 +21,6 @@ const PKGNAME = getMakeVariable('PKGNAME');
 const DISTNAME = getMakeVariable('DISTNAME');
 // https://man.openbsd.org/bsd.port.mk.5#WRKSRC
 const WRKSRC = getMakeVariable('WRKSRC');
-//process.env.PKG_BUILD_PATH ??= `${process.env.WRKOBJDIR}/${PKGNAME}/${DISTNAME}`;
 process.env.PKG_BUILD_PATH ??= `${process.env.WRKOBJDIR}/${PKGNAME}`;
 log.info(`PKG_BUILD_PATH: ${process.env.PKG_BUILD_PATH}`);
 
