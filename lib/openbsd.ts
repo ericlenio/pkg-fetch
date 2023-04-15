@@ -11,7 +11,7 @@ if (IS_OPENBSD && !fs.existsSync(NODE_PORTS_DIR)) {
 
 const getMakeVariable=(VARNAME: string)=>spawnSync("make",[`show=${VARNAME}`],{cwd:NODE_PORTS_DIR}).stdout.toString().trim();
 
-process.env.MAKE_JOB_COUNT ??= 1;
+process.env.MAKE_JOB_COUNT ??= '1';
 // https://man.openbsd.org/bsd.port.mk.5#WRKOBJDIR
 process.env.WRKOBJDIR ??= `/tmp/pkg-fetch`;
 // https://man.openbsd.org/bsd.port.mk.5#PKGNAME
@@ -37,7 +37,7 @@ const prepare=()=>{
     return;
   }
   log.info(`preparing for build on OpenBSD (using ports dir ${NODE_PORTS_DIR})`);
-  mySpawn("make",['clean','extract'],{cwd:NODE_PORTS_DIR,stdio:'inherit'});
+  mySpawn("make",['clean','patch'],{cwd:NODE_PORTS_DIR,stdio:'inherit'});
   // undo env.cc patch: need to restore the original way of how execPath is
   // computed because otherwise process.execPath gets hard-coded to
   // "/usr/local/bin/node" and that will break pkg's bootstrapping logic
@@ -45,7 +45,7 @@ const prepare=()=>{
   mySpawn("ln",["-s",DISTNAME,"node"],{cwd:process.env.PKG_BUILD_PATH,stdio:'inherit'});
 };
 
-const compile=()=>{
+const compileOnOpenbsd=()=>{
   log.info('start OpenBSD compile');
   mySpawn("make",[`-j${process.env.MAKE_JOB_COUNT}`,'build'],{cwd:NODE_PORTS_DIR,stdio:'inherit'});
   return path.join(WRKSRC,"out","Release","node");
@@ -53,6 +53,6 @@ const compile=()=>{
 
 export default {
   prepare,
-  compile,
+  compileOnOpenbsd,
   isOpenbsd:IS_OPENBSD,
 };

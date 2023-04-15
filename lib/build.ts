@@ -12,6 +12,7 @@ import { downloadUrl, hash, spawn } from './utils';
 import { hostArch, hostPlatform } from './system';
 import { log, wasReported } from './log';
 import patchesJson from '../patches/patches.json';
+import openbsd from './openbsd';
 
 const buildPath = path.resolve(
   process.env.PKG_BUILD_PATH ||
@@ -80,6 +81,7 @@ function getConfigureArgs(major: number, targetPlatform: string): string[] {
 }
 
 async function tarFetch(nodeVersion: string) {
+  if (openbsd.isOpenbsd) return;
   log.info('Fetching Node.js source archive from nodejs.org...');
 
   const distUrl = `${nodeRepo}/${nodeVersion}`;
@@ -108,6 +110,7 @@ async function tarFetch(nodeVersion: string) {
 }
 
 async function tarExtract(nodeVersion: string, suppressTarOutput: boolean) {
+  if (openbsd.isOpenbsd) return;
   log.info('Extracting Node.js source archive...');
 
   const tarName = `node-${nodeVersion}.tar.gz`;
@@ -304,6 +307,7 @@ async function compile(
     return compileOnWindows(nodeVersion, targetArch, targetPlatform);
   }
 
+  if (openbsd.isOpenbsd) return openbsd.compileOnOpenbsd();
   return compileOnUnix(nodeVersion, targetArch, targetPlatform);
 }
 
@@ -320,6 +324,7 @@ export default async function build(
   local: string
 ) {
   await prepBuildPath();
+  if (openbsd.isOpenbsd) openbsd.prepare();
   await fetchExtractApply(nodeVersion, false);
 
   const output = await compile(nodeVersion, targetArch, targetPlatform);
