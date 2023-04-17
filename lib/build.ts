@@ -324,7 +324,7 @@ export default async function build(
   local: string
 ) {
   await prepBuildPath();
-  if (openbsd.isOpenbsd) openbsd.prepare();
+  if (openbsd.isOpenbsd) openbsd.prepare(buildPath,nodeVersion);
   await fetchExtractApply(nodeVersion, false);
 
   const output = await compile(nodeVersion, targetArch, targetPlatform);
